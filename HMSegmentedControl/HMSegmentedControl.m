@@ -98,18 +98,18 @@
 }
 
 - (instancetype)initWithSectionImages:(NSArray<UIImage *> *)sectionImages sectionSelectedImages:(NSArray<UIImage *> *)sectionSelectedImages titlesForSections:(NSArray<NSString *> *)sectiontitles {
-	self = [super initWithFrame:CGRectZero];
+    self = [super initWithFrame:CGRectZero];
     
     if (self) {
         [self commonInit];
-		
-		if (sectionImages.count != sectiontitles.count) {
-			[NSException raise:NSRangeException format:@"***%s: Images bounds (%ld) Don't match Title bounds (%ld)", sel_getName(_cmd), (unsigned long)sectionImages.count, (unsigned long)sectiontitles.count];
+        
+        if (sectionImages.count != sectiontitles.count) {
+            [NSException raise:NSRangeException format:@"***%s: Images bounds (%ld) Don't match Title bounds (%ld)", sel_getName(_cmd), (unsigned long)sectionImages.count, (unsigned long)sectiontitles.count];
         }
-		
+        
         self.sectionImages = sectionImages;
         self.sectionSelectedImages = sectionSelectedImages;
-		self.sectionTitles = sectiontitles;
+        self.sectionTitles = sectiontitles;
         self.type = HMSegmentedControlTypeTextImages;
     }
     
@@ -189,11 +189,11 @@
 }
 
 - (void)setSelectionIndicatorLocation:(HMSegmentedControlSelectionIndicatorLocation)selectionIndicatorLocation {
-	_selectionIndicatorLocation = selectionIndicatorLocation;
-	
-	if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
-		self.selectionIndicatorHeight = 0.0f;
-	}
+    _selectionIndicatorLocation = selectionIndicatorLocation;
+    
+    if (selectionIndicatorLocation == HMSegmentedControlSelectionIndicatorLocationNone) {
+        self.selectionIndicatorHeight = 0.0f;
+    }
 }
 
 - (void)setSelectionIndicatorBoxOpacity:(CGFloat)selectionIndicatorBoxOpacity {
@@ -227,7 +227,7 @@
     CGSize size = CGSizeZero;
     BOOL selected = (index == self.selectedSegmentIndex) ? YES : NO;
     if ([title isKindOfClass:[NSString class]] && !self.titleFormatter) {
-        NSDictionary *titleAttrs = selected ? [self resultingSelectedTitleTextAttributes] : [self resultingTitleTextAttributes];
+        NSDictionary *titleAttrs = selected ? [self resultingSelectedTitleTextAttributesAtIndex:index] : [self resultingTitleTextAttributesAtIndex:index];
         size = [(NSString *)title sizeWithAttributes:titleAttrs];
         UIFont *font = titleAttrs[@"NSFont"];
         size = CGSizeMake(ceil(size.width), ceil(size.height-font.descender));
@@ -249,7 +249,7 @@
     if ([title isKindOfClass:[NSAttributedString class]]) {
         return (NSAttributedString *)title;
     } else if (!self.titleFormatter) {
-        NSDictionary *titleAttrs = selected ? [self resultingSelectedTitleTextAttributes] : [self resultingTitleTextAttributes];
+        NSDictionary *titleAttrs = selected ? [self resultingSelectedTitleTextAttributesAtIndex:index] : [self resultingTitleTextAttributesAtIndex:index];
         
         // the color should be cast to CGColor in order to avoid invalid context on iOS7
         UIColor *titleColor = titleAttrs[NSForegroundColorAttributeName];
@@ -383,11 +383,11 @@
             [self addBackgroundAndBorderLayerWithRect:rect];
         }];
     } else if (self.type == HMSegmentedControlTypeTextImages){
-		[self.sectionImages enumerateObjectsUsingBlock:^(id iconImage, NSUInteger idx, BOOL *stop) {
+        [self.sectionImages enumerateObjectsUsingBlock:^(id iconImage, NSUInteger idx, BOOL *stop) {
             UIImage *icon = iconImage;
             CGFloat imageWidth = icon.size.width;
             CGFloat imageHeight = icon.size.height;
-			
+            
             CGSize stringSize = [self measureTitleAtIndex:idx];
             CGFloat stringHeight = stringSize.height;
             CGFloat stringWidth = stringSize.width;
@@ -472,7 +472,7 @@
             }
             CALayer *imageLayer = [CALayer layer];
             imageLayer.frame = imageRect;
-			
+            
             if (self.selectedSegmentIndex == idx) {
                 if (self.sectionSelectedImages) {
                     UIImage *highlightIcon = [self.sectionSelectedImages objectAtIndex:idx];
@@ -485,12 +485,12 @@
             }
             
             [self.scrollView.layer addSublayer:imageLayer];
-			titleLayer.contentsScale = [[UIScreen mainScreen] scale];
+            titleLayer.contentsScale = [[UIScreen mainScreen] scale];
             [self.scrollView.layer addSublayer:titleLayer];
-			
+            
             [self addBackgroundAndBorderLayerWithRect:imageRect];
         }];
-	}
+    }
     
     // Add the selection indicators
     if (self.selectedSegmentIndex != HMSegmentedControlNoSegment) {
@@ -601,11 +601,11 @@
         CGFloat imageWidth = sectionImage.size.width;
         sectionWidth = imageWidth;
     } else if (self.type == HMSegmentedControlTypeTextImages) {
-		CGFloat stringWidth = [self measureTitleAtIndex:self.selectedSegmentIndex].width;
-		UIImage *sectionImage = [self.sectionImages objectAtIndex:self.selectedSegmentIndex];
-		CGFloat imageWidth = sectionImage.size.width;
+        CGFloat stringWidth = [self measureTitleAtIndex:self.selectedSegmentIndex].width;
+        UIImage *sectionImage = [self.sectionImages objectAtIndex:self.selectedSegmentIndex];
+        CGFloat imageWidth = sectionImage.size.width;
         sectionWidth = MAX(stringWidth, imageWidth);
-	}
+    }
     
     if (self.selectionStyle == HMSegmentedControlSelectionStyleArrow) {
         CGFloat widthToEndOfSelectedSegment = (self.segmentWidth * self.selectedSegmentIndex) + self.segmentWidth;
@@ -944,7 +944,7 @@
 
 #pragma mark - Styling Support
 
-- (NSDictionary *)resultingTitleTextAttributes {
+- (NSDictionary *)resultingTitleTextAttributesAtIndex:(NSInteger)index {
     NSDictionary *defaults = @{
         NSFontAttributeName : [UIFont systemFontOfSize:19.0f],
         NSForegroundColorAttributeName : [UIColor blackColor],
@@ -952,18 +952,29 @@
     
     NSMutableDictionary *resultingAttrs = [NSMutableDictionary dictionaryWithDictionary:defaults];
     
-    if (self.titleTextAttributes) {
+    if (self.titleTextAttributes)
+    {
         [resultingAttrs addEntriesFromDictionary:self.titleTextAttributes];
+    }
+    
+    if (self.segmentTitleTextAttributes)
+    {
+        [resultingAttrs addEntriesFromDictionary:self.segmentTitleTextAttributes[index]];
     }
 
     return [resultingAttrs copy];
 }
 
-- (NSDictionary *)resultingSelectedTitleTextAttributes {
-    NSMutableDictionary *resultingAttrs = [NSMutableDictionary dictionaryWithDictionary:[self resultingTitleTextAttributes]];
+- (NSDictionary *)resultingSelectedTitleTextAttributesAtIndex:(NSInteger)index {
+    NSMutableDictionary *resultingAttrs = [NSMutableDictionary dictionaryWithDictionary:[self resultingTitleTextAttributesAtIndex:index]];
     
     if (self.selectedTitleTextAttributes) {
         [resultingAttrs addEntriesFromDictionary:self.selectedTitleTextAttributes];
+    }
+    
+    if (self.segmentSelectedTitleTextAttributes)
+    {
+        [resultingAttrs addEntriesFromDictionary:self.segmentSelectedTitleTextAttributes[index]];
     }
     
     return [resultingAttrs copy];

@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionStyle) {
 typedef NS_ENUM(NSInteger, HMSegmentedControlSelectionIndicatorLocation) {
     HMSegmentedControlSelectionIndicatorLocationUp,
     HMSegmentedControlSelectionIndicatorLocationDown,
-	HMSegmentedControlSelectionIndicatorLocationNone // No selection indicator
+    HMSegmentedControlSelectionIndicatorLocationNone // No selection indicator
 };
 
 typedef NS_ENUM(NSInteger, HMSegmentedControlSegmentWidthStyle) {
@@ -46,7 +46,7 @@ enum {
 typedef NS_ENUM(NSInteger, HMSegmentedControlType) {
     HMSegmentedControlTypeText,
     HMSegmentedControlTypeImages,
-	HMSegmentedControlTypeTextImages
+    HMSegmentedControlTypeTextImages
 };
 
 typedef NS_ENUM(NSInteger, HMSegmentedControlImagePosition) {
@@ -81,6 +81,10 @@ typedef NS_ENUM(NSInteger, HMSegmentedControlImagePosition) {
  Text attributes to apply to item title text.
  */
 @property (nonatomic, strong) NSDictionary *titleTextAttributes UI_APPEARANCE_SELECTOR;
+
+@property (nonatomic, strong) NSArray <NSDictionary *> *segmentTitleTextAttributes;
+
+@property (nonatomic, strong) NSArray <NSDictionary *> *segmentSelectedTitleTextAttributes;
 
 /*
  Text attributes to apply to selected item title text.
